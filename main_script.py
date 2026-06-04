@@ -35,18 +35,16 @@ def get_host(config_url):
     return None
 
 def check_latency(config_url):
-    """ GitHub တွင် Ping ပိတ်ထားပါက အလုပ်လုပ်စေရန် requests timeout ဖြင့် လိုင်းမြန်နှုန်း စစ်ဆေးခြင်း """
+    """ GitHub Actions ပေါ်တွင် အလုပ်လုပ်စေရန် HTTP Timeout ဖြင့် လိုင်းမြန်နှုန်းစစ်ဆေးခြင်း """
     host = get_host(config_url)
     if not host:
         return config_url, 9999
     try:
-        # HTTP တောင်းဆိုမှု ကြာချိန်ဖြင့် Latency စစ်ဆေးခြင်း (GitHub ပေါ်တွင် ပိုမိုစိတ်ချရသည်)
         start_time = time.time()
-        resp = requests.get(f"http://{host}", timeout=1.5)
+        requests.get(f"http://{host}", timeout=1.5)
         latency = (time.time() - start_time) * 1000
         return config_url, latency
     except:
-        # HTTP တိုက်ရိုက်မရပါက နောက်တစ်နည်းဖြင့် စမ်းသပ်ခြင်း
         try:
             start_time = time.time()
             requests.head(f"https://{host}", timeout=1.5)
@@ -70,7 +68,7 @@ def run():
     unique_keys = list(set(all_keys))
     print(f"Found {len(unique_keys)} unique keys. Testing latency...")
     
-    # ပထမဆုံး သော့ချက် အခု ၆၀ ကို စမ်းသပ်မည်
+    # ပထမဆုံး ကီး အခု ၆၀ ကို အမြန်နှုန်း စမ်းသပ်မည်
     sample_keys = unique_keys[:60]
     with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
         results = list(executor.map(check_latency, sample_keys))
@@ -85,19 +83,27 @@ def run():
         print("လိုင်းကောင်းသော VPN Key မတွေ့ရှိပါ။")
         return
 
-    # Telegram သို့ ပို့ရန် စာသား ပုံစံပြင်ဆင်ခြင်း
-    today = time.strftime("%Y-%m-%d")
-    template = f"🚀 <b>FREE VPN KEYS UPDATE</b> | {today} 🚀\n"
-    template += "=========================\n\n"
+    # Telegram ချန်နယ်အတွက် စာသား Format ဒီဇိုင်းသစ် ပြင်ဆင်ခြင်း
+    template = "<b>MM Free VPN Hub</b>\n"
+    template += "🇳🇱 NETHERLANDS VLESS 🇳🇱\n"
+    template += "⚡ REALITY NODES ⚡\n"
+    template += "🚀 REALITY SECURITY\n"
+    template += "🌐 XTLS VISION\n"
+    template += "🌍 STABLE CONNECTION\n"
+    template += "━━━━━━━━━━━━━━━━━━\n\n"
     
+    # ရွေးထုတ်ထားသော Node ၅ ခုကို ထည့်သွင်းခြင်း (Tap to Copy စနစ်ပါဝင်သည်)
     for i, (key, lat) in enumerate(top_5_keys, 1):
-        template += f"🔑 <b>NODE {i:02d}</b> (Latency: {int(lat)}ms)\n"
-        template += f"<code>{key}</code>\n\n"
+        template += f"📦 <b>NODE {i:02d}</b> (Latency: {int(lat)}ms)\n"
+        template += f"<code>{key}</code>\n"  # စာသားကို နှိပ်လိုက်သည်နှင့် Auto Copy ဖြစ်သွားစေမည့်အပိုင်း
+        template += "━━━━━━━━━━━━━━━━━━\n"
         
-    template += "=========================\n"
-    template += "📱 SUPPORTED APPS\n"
-    template += "✓ v2rayNG  ✓ V2Box  ✓ Nekobox\n\n"
-    template += "#V2ray #Vless #Vmess #FreeVPN"
+    # အောက်ခြေ အချက်အလက်များနှင့် Hashtags များ
+    template += "\n📱 SUPPORTED APPS\n"
+    template += "✅ V2Box\n"
+    template += "✅ V2RayNG\n"
+    template += "✅ Nekobox\n\n"
+    template += "#Netherlands #Reality #VLESS #TodayUpdate"
 
     # ဖိုင်ထဲသို့ သိမ်းဆည်းခြင်း
     with open("best_keys.txt", "w", encoding="utf-8") as f:
@@ -118,7 +124,7 @@ def run():
         }
         try:
             response = requests.post(telegram_url, json=payload)
-            if response.ok:
+            if response.status_code == 200 or response.ok:
                 print("Telegram channel သို့ အကောင်းဆုံး Keys များ ပို့ပြီးပါပြီ!")
             else:
                 print(f"Telegram Error: {response.text}")
