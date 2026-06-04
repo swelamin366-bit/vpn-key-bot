@@ -1,0 +1,29 @@
+name: Auto Post VPN Keys
+on:
+  schedule:
+    - cron: '0 */6 * * *' # ၆ နာရီခြား တစ်ခါ အလိုအလျောက် run မည်
+  workflow_dispatch: # ကိုယ်တိုင် လက်နဲ့ နှိပ်ပြီး run ချင်ရင်လည်း ရသည်
+
+jobs:
+  post_keys:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Scraper and Checker
+        run: python main_script.py
+
+      - name: Send to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python telegram_bot.py
