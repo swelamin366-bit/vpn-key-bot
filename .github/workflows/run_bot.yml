@@ -19,11 +19,8 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Run Scraper and Checker
-        run: python main_script.py
-
-      - name: Send to Telegram
+      - name: Run Scraper and Send to Telegram
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python telegram_bot.py
+        run: python main_script.py
